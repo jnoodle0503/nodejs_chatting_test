@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+
+<body>
+    <div>
+        <textarea id="chatLog" class="chat_log" rows="30" cols="50" readonly></textarea>
+    </div>
+    <form id="chat">
+        <input id="name" class="name" type="text" readonly>
+        <input id="message" class="message" type="text">
+        <input type="submit" class="chat" value="chat" />
+    </form>
+    <div id="box" class="box">
+        <script src="/socket.io/socket.io.js"></script> <!-- 1 -->
+        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+        <script>
+            // socket.io 의 connection 을 받으며, socket.io 를 사용하기 위한 필수
+            const socket = io();
+
+            $("#chat").on("submit", (e) => {
+                socket.emit("send message", $("#name").val(), $("#message").val());
+                $("#message").val('');
+                $("#message").focus();
+                e.preventDefault();
+            });
+
+            socket.on("receive message", (msg) => {
+                $("#chatLog").append(`${msg}\n`);
+                $("#chatLog").scrollTop($("#chatLog")[0].scrollHeight);
+            });
+
+            socket.on("change name", (userName) => {
+                $("#name").val(userName);
+            })
+
+            socket.on("user connected", (userName) => {
+                $("#chatLog").append(`${userName}님이 접속했습니다.\n`);
+                $("#chatLog").scrollTop($("#chatLog")[0].scrollHeight);
+            })
+
+            socket.on("disconnected user", (disName) => {
+                $("#chatLog").append(`${disName}님이 접속을 종료했습니다.\n`);
+                $("#chatLog").scrollTop($("#chatLog")[0].scrollHeight);
+            })
+        </script>
+</body>
+
+</html>
